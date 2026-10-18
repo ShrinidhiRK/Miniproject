@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IoT Data Cleaner Dashboard</title>
+    <!-- Using Bootstrap for standard, clean UI -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="card shadow-sm max-w-md mx-auto" style="max-width: 600px;">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">IoT Sensor Data Analyzer</h4>
+            </div>
+            <div class="card-body">
+                <p>Upload a raw sensor log (.csv) to clean the data and calculate analytics.</p>
+                
+                <!-- The Upload Form -->
+                <form action="/analyze" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input class="form-control" type="file" name="file" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Upload & Analyze</button>
+                </form>
+
+                <!-- Display Results if they exist -->
+                {% if success %}
+                <div class="alert alert-success mt-4">
+                    <h5>Analysis Complete</h5>
+                    <ul class="mb-0">
+                        <li><strong>Valid Readings Processed:</strong> {{ valid_count }}</li>
+                        <li><strong>Corrupted Rows Dropped:</strong> {{ dropped_count }}</li>
+                        <li><strong>Average Temperature:</strong> {{ average_temp }} °C</li>
+                    </ul>
+                </div>
+                {% endif %}
+
+                <!-- Display Errors -->
+                {% if error %}
+                <div class="alert alert-danger mt-4">
+                    {{ error }}
+                </div>
+                {% endif %}
+            </div>
+            
+        </div>
+    </div>
+</body>
+</html>

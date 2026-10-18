@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>IoT Data Cleaner Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Import Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-light pb-5">
+    <div class="container mt-5">
+        <div class="card shadow-sm max-w-md mx-auto" style="max-width: 800px;">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">IoT Sensor Data Analyzer</h4>
+            </div>
+            <div class="card-body">
+                <p>Upload a raw sensor log (.csv) to clean the data and view analytics.</p>
+                
+                <form action="/analyze" method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <input class="form-control" type="file" name="file" accept=".csv" required>
+                    </div>
+                    <button type="submit" class="btn btn-success w-100">Upload & Analyze</button>
+                </form>
+
+                {% if success %}
+                <div class="alert alert-success mt-4">
+                    <h5>Analysis Complete</h5>
+                    <ul class="mb-0">
+                        <li><strong>Valid Readings Processed:</strong> {{ valid_count }}</li>
+                        <li><strong>Corrupted Rows Dropped:</strong> {{ dropped_count }}</li>
+                        <li><strong>Average Temperature:</strong> {{ average_temp }} °C</li>
+                    </ul>
+                </div>
+
+                <!-- The Graph Area -->
+                <div class="mt-4">
+                    <canvas id="sensorChart"></canvas>
+                </div>
+                {% endif %}
+
+                {% if error %}
+                <div class="alert alert-danger mt-4">
+                    {{ error }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Script to draw the graph using the data passed from Python -->
+    {% if success %}
+    <script>
+        const ctx = document.getElementById('sensorChart').getContext('2d');
+        const sensorChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                // tojson safely converts Python lists into JavaScript arrays
+                labels: {{ timestamps | tojson }},
+                datasets: [{
+                    label: 'Valid Temperature (°C)',
+                    data: {{ temperatures | tojson }},
+                    borderColor: 'rgba(40, 167, 69, 1)', // Bootstrap green
+                    backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.2, // Adds a slight curve to the line
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Timestamp' } },
+                    y: { title: { display: true, text: 'Temperature (°C)' } }
+                }
+            }
+        });
+    </script>
+    {% endif %}
+</body>
+</html>
